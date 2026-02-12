@@ -6,6 +6,7 @@ import type { Subtask } from '@/types'
 export function useSubtasks(taskId: string | undefined) {
   const [subtasks, setSubtasks] = useState<Subtask[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchSubtasks = useCallback(async () => {
     if (!taskId) {
@@ -13,13 +14,18 @@ export function useSubtasks(taskId: string | undefined) {
       return
     }
 
-    const { data } = await supabase
+    setError(null)
+    const { data, error: fetchError } = await supabase
       .from('subtasks')
       .select('*')
       .eq('task_id', taskId)
       .order('sort_order', { ascending: true })
 
-    setSubtasks(data ?? [])
+    if (fetchError) {
+      setError(fetchError.message)
+    } else {
+      setSubtasks(data ?? [])
+    }
     setLoading(false)
   }, [taskId])
 
@@ -85,6 +91,7 @@ export function useSubtasks(taskId: string | undefined) {
   return {
     subtasks,
     loading,
+    error,
     addSubtask,
     toggleSubtask,
     deleteSubtask,

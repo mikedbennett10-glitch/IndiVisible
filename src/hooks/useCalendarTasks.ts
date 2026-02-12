@@ -9,20 +9,28 @@ export function useCalendarTasks(year: number, month: number) {
   const { profile } = useAuth()
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const householdId = profile?.household_id
 
   const fetchTasks = useCallback(async () => {
     if (!householdId) return
 
+    setError(null)
     const monthDate = new Date(year, month)
     const start = format(startOfMonth(monthDate), 'yyyy-MM-dd')
     const end = format(endOfMonth(monthDate), 'yyyy-MM-dd')
 
-    const { data: lists } = await supabase
+    const { data: lists, error: listsError } = await supabase
       .from('lists')
       .select('id')
       .eq('household_id', householdId)
+
+    if (listsError) {
+      setError(listsError.message)
+      setLoading(false)
+      return
+    }
 
     if (!lists?.length) {
       setTasks([])
@@ -32,7 +40,7 @@ export function useCalendarTasks(year: number, month: number) {
 
     const listIds = lists.map((l) => l.id)
 
-    const { data } = await supabase
+    const { data, error: tasksError } = await supabase
       .from('tasks')
       .select('*')
       .in('list_id', listIds)
@@ -40,7 +48,11 @@ export function useCalendarTasks(year: number, month: number) {
       .lte('due_date', end)
       .order('due_date', { ascending: true })
 
-    setTasks(data ?? [])
+    if (tasksError) {
+      setError(tasksError.message)
+    } else {
+      setTasks(data ?? [])
+    }
     setLoading(false)
   }, [householdId, year, month])
 
@@ -66,5 +78,5 @@ export function useCalendarTasks(year: number, month: number) {
     tasksByDate.set(task.due_date, existing)
   }
 
-  return { tasks, tasksByDate, loading, refetch: fetchTasks }
+  return { tasks, tasksByDate, loading, error, refetch: fetchTasks }
 }

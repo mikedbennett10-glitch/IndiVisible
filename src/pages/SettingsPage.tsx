@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useHouseholdMembers } from '@/hooks/useHouseholdMembers'
 import { useToast } from '@/hooks/useToast'
@@ -8,13 +9,14 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { ColorPicker } from '@/components/ui/ColorPicker'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { Copy, Check, RefreshCw, LogOut, Users, User, Info, Bell, BellOff, Sun, Moon, Monitor } from 'lucide-react'
+import { Copy, Check, RefreshCw, LogOut, Users, User, Info, Bell, BellOff, Sun, Moon, Monitor, DoorOpen } from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useTheme } from '@/hooks/useTheme'
 import type { ThemeMode } from '@/contexts/ThemeContext'
 import clsx from 'clsx'
 
 export function SettingsPage() {
+  const navigate = useNavigate()
   const { profile, household, signOut, refreshProfile } = useAuth()
   const { members } = useHouseholdMembers()
   const toast = useToast()
@@ -23,6 +25,8 @@ export function SettingsPage() {
   const [savingName, setSavingName] = useState(false)
   const [copied, setCopied] = useState(false)
   const [showSignOut, setShowSignOut] = useState(false)
+  const [showLeaveHousehold, setShowLeaveHousehold] = useState(false)
+  const [leavingHousehold, setLeavingHousehold] = useState(false)
   const { permission, subscribed, loading: pushLoading, subscribe, unsubscribe, isSupported } = usePushNotifications()
   const [pushToggling, setPushToggling] = useState(false)
   const { mode: themeMode, setMode: setThemeMode } = useTheme()
@@ -85,6 +89,23 @@ export function SettingsPage() {
     } else {
       toast.success('Invite code regenerated')
       await refreshProfile()
+    }
+  }
+
+  async function handleLeaveHousehold() {
+    if (!profile) return
+    setLeavingHousehold(true)
+    const { error } = await supabase
+      .from('profiles')
+      .update({ household_id: null })
+      .eq('id', profile.id)
+
+    if (error) {
+      toast.error(error.message)
+      setLeavingHousehold(false)
+    } else {
+      await refreshProfile()
+      navigate('/household-setup')
     }
   }
 
@@ -198,6 +219,17 @@ export function SettingsPage() {
             ))}
           </div>
         </div>
+
+        {/* Leave Household */}
+        <div className="mt-4 pt-4 border-t border-warm-100">
+          <button
+            onClick={() => setShowLeaveHousehold(true)}
+            className="flex items-center gap-2 text-sm text-danger-500 hover:text-danger-600 font-medium transition-colors"
+          >
+            <DoorOpen size={16} />
+            Leave household
+          </button>
+        </div>
       </Card>
 
       {/* Notifications */}
@@ -300,6 +332,15 @@ export function SettingsPage() {
         title="Sign Out"
         message="Are you sure you want to sign out?"
         confirmLabel="Sign Out"
+      />
+
+      <ConfirmDialog
+        open={showLeaveHousehold}
+        onClose={() => setShowLeaveHousehold(false)}
+        onConfirm={handleLeaveHousehold}
+        title="Leave Household"
+        message="You'll lose access to all shared lists and tasks. You can join another household or create a new one afterward."
+        confirmLabel={leavingHousehold ? 'Leaving...' : 'Leave'}
       />
     </div>
   )
