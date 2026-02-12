@@ -138,10 +138,16 @@ serve(async (req: Request) => {
 
     // Build Claude conversation
     const systemPrompt = buildSystemPrompt(context);
-    const conversationHistory = buildConversationHistory(
+    let conversationHistory = buildConversationHistory(
       (recentMessages ?? []).reverse(),
       context
     );
+
+    // Safety: ensure at least the current message is included
+    if (conversationHistory.length === 0) {
+      const sender = context.members.find((m) => m.id === user_id)?.display_name ?? "User";
+      conversationHistory = [{ role: "user", content: `[${sender}]: ${message_content}` }];
+    }
 
     // Call Claude API
     const response = await anthropic.messages.create({
