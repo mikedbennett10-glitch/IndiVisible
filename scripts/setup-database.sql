@@ -133,13 +133,34 @@ create table public.push_subscriptions (
   unique(user_id, endpoint)
 );
 
--- Messages (household chat)
+-- Messages (household chat — shared between partners + AI assistant)
 create table public.messages (
   id uuid primary key default uuid_generate_v4(),
   household_id uuid not null references public.households(id) on delete cascade,
-  user_id uuid not null references public.profiles(id) on delete cascade,
+  user_id uuid references public.profiles(id) on delete cascade,
   content text not null,
+  role text not null default 'user' check (role in ('user', 'assistant')),
+  intent text,
+  related_task_id uuid references public.tasks(id) on delete set null,
+  read_by uuid[] default '{}',
   created_at timestamptz not null default now()
+);
+
+-- Assistant preferences (per-user settings for Indi)
+create table public.assistant_preferences (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references public.profiles(id) on delete cascade unique,
+  enabled boolean not null default true,
+  quiet_hours_start time default '22:00',
+  quiet_hours_end time default '07:00',
+  briefing_time time default '08:00',
+  agent_frequency text not null default 'normal'
+    check (agent_frequency in ('off', 'minimal', 'normal', 'proactive')),
+  agent_tone text not null default 'friendly'
+    check (agent_tone in ('professional', 'friendly', 'casual', 'brief')),
+  snoozed_until timestamptz default null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 -- Activity log
@@ -175,6 +196,8 @@ create index idx_notifications_unread on public.notifications(user_id, read) whe
 create index idx_notifications_created on public.notifications(user_id, created_at desc);
 create index idx_push_subscriptions_user on public.push_subscriptions(user_id);
 create index idx_messages_household on public.messages(household_id, created_at desc);
+create index idx_messages_role on public.messages(household_id, role) where role = 'assistant';
+create index idx_assistant_prefs_user on public.assistant_preferences(user_id);
 create index idx_activity_household on public.activity_log(household_id);
 create index idx_activity_task on public.activity_log(task_id);
 create index idx_activity_created on public.activity_log(created_at);
@@ -198,6 +221,8 @@ create trigger set_updated_at before update on public.profiles
 create trigger set_updated_at before update on public.lists
   for each row execute function public.handle_updated_at();
 create trigger set_updated_at before update on public.tasks
+  for each row execute function public.handle_updated_at();
+create trigger set_updated_at before update on public.assistant_preferences
   for each row execute function public.handle_updated_at();
 
 -- Auto-create profile on auth signup
@@ -446,6 +471,21 @@ create policy "Users can send messages in their household"
 
 create policy "Users can delete own messages"
   on public.messages for delete
+  using (user_id = auth.uid());
+
+-- Assistant preferences
+alter table public.assistant_preferences enable row level security;
+
+create policy "Users can view own assistant preferences"
+  on public.assistant_preferences for select
+  using (user_id = auth.uid());
+
+create policy "Users can insert own assistant preferences"
+  on public.assistant_preferences for insert
+  with check (user_id = auth.uid());
+
+create policy "Users can update own assistant preferences"
+  on public.assistant_preferences for update
   using (user_id = auth.uid());
 
 -- Activity log

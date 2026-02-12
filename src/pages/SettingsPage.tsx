@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { ColorPicker } from '@/components/ui/ColorPicker'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { Copy, Check, RefreshCw, LogOut, Users, User, Info, Bell, BellOff, Sun, Moon, Monitor, DoorOpen } from 'lucide-react'
+import { Copy, Check, RefreshCw, LogOut, Users, User, Info, Bell, BellOff, Sun, Moon, Monitor, DoorOpen, Sparkles } from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
+import { useAssistantPreferences } from '@/hooks/useAssistantPreferences'
 import { useTheme } from '@/hooks/useTheme'
 import type { ThemeMode } from '@/contexts/ThemeContext'
 import clsx from 'clsx'
@@ -30,6 +31,7 @@ export function SettingsPage() {
   const { permission, subscribed, loading: pushLoading, subscribe, unsubscribe, isSupported } = usePushNotifications()
   const [pushToggling, setPushToggling] = useState(false)
   const { mode: themeMode, setMode: setThemeMode } = useTheme()
+  const { preferences: assistantPrefs, updatePreferences: updateAssistantPrefs } = useAssistantPreferences()
 
   const themeOptions: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
     { value: 'light', label: 'Light', icon: Sun },
@@ -272,6 +274,125 @@ export function SettingsPage() {
               )}
             </button>
           )}
+        </div>
+      </Card>
+
+      {/* AI Assistant */}
+      <Card>
+        <div className="flex items-center gap-2 mb-4 text-warm-600">
+          <Sparkles size={16} />
+          <h2 className="text-sm font-semibold">AI Assistant (Indi)</h2>
+        </div>
+
+        {/* Enable/Disable */}
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm font-medium text-warm-800">Enabled</p>
+            <p className="text-xs text-warm-400 mt-0.5">Indi can respond to messages and help manage tasks</p>
+          </div>
+          <button
+            onClick={async () => {
+              const result = await updateAssistantPrefs({ enabled: !assistantPrefs?.enabled })
+              if (result.error) toast.error(result.error)
+            }}
+            className={clsx(
+              'relative w-11 h-6 rounded-full transition-colors',
+              assistantPrefs?.enabled ? 'bg-primary-500' : 'bg-warm-200'
+            )}
+          >
+            <span
+              className={clsx(
+                'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform',
+                assistantPrefs?.enabled && 'translate-x-5'
+              )}
+            />
+          </button>
+        </div>
+
+        {/* Tone */}
+        <div className="mb-4">
+          <label className="block text-xs font-medium text-warm-500 mb-2">Tone</label>
+          <div className="grid grid-cols-2 gap-1.5">
+            {(['friendly', 'casual', 'professional', 'brief'] as const).map((tone) => (
+              <button
+                key={tone}
+                onClick={async () => {
+                  const result = await updateAssistantPrefs({ agent_tone: tone })
+                  if (result.error) toast.error(result.error)
+                }}
+                className={clsx(
+                  'px-3 py-2 rounded-lg text-xs font-medium capitalize transition-colors',
+                  assistantPrefs?.agent_tone === tone
+                    ? 'bg-primary-50 text-primary-700 ring-1 ring-primary-200'
+                    : 'bg-warm-50 text-warm-500 hover:bg-warm-100'
+                )}
+              >
+                {tone}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Proactivity */}
+        <div className="mb-4">
+          <label className="block text-xs font-medium text-warm-500 mb-2">Proactivity</label>
+          <div className="grid grid-cols-2 gap-1.5">
+            {([
+              { value: 'off', desc: 'Only when asked' },
+              { value: 'minimal', desc: 'Rare check-ins' },
+              { value: 'normal', desc: 'Helpful reminders' },
+              { value: 'proactive', desc: 'Active suggestions' },
+            ] as const).map((opt) => (
+              <button
+                key={opt.value}
+                onClick={async () => {
+                  const result = await updateAssistantPrefs({ agent_frequency: opt.value })
+                  if (result.error) toast.error(result.error)
+                }}
+                className={clsx(
+                  'px-3 py-2 rounded-lg text-left transition-colors',
+                  assistantPrefs?.agent_frequency === opt.value
+                    ? 'bg-primary-50 ring-1 ring-primary-200'
+                    : 'bg-warm-50 hover:bg-warm-100'
+                )}
+              >
+                <span className={clsx(
+                  'block text-xs font-medium capitalize',
+                  assistantPrefs?.agent_frequency === opt.value ? 'text-primary-700' : 'text-warm-600'
+                )}>
+                  {opt.value}
+                </span>
+                <span className="block text-[10px] text-warm-400 mt-0.5">{opt.desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Quiet Hours */}
+        <div>
+          <label className="block text-xs font-medium text-warm-500 mb-2">Quiet Hours</label>
+          <p className="text-[11px] text-warm-400 mb-2">Indi won't send proactive messages during these hours</p>
+          <div className="flex items-center gap-2">
+            <input
+              type="time"
+              value={assistantPrefs?.quiet_hours_start ?? '22:00'}
+              onChange={async (e) => {
+                const result = await updateAssistantPrefs({ quiet_hours_start: e.target.value })
+                if (result.error) toast.error(result.error)
+              }}
+              className="flex-1 px-3 py-2 rounded-lg border border-warm-200 bg-white text-sm text-warm-700 focus:outline-none focus:ring-2 focus:ring-primary-400"
+            />
+            <span className="text-xs text-warm-400">to</span>
+            <input
+              type="time"
+              value={assistantPrefs?.quiet_hours_end ?? '08:00'}
+              onChange={async (e) => {
+                const result = await updateAssistantPrefs({ quiet_hours_end: e.target.value })
+                if (result.error) toast.error(result.error)
+              }}
+              className="flex-1 px-3 py-2 rounded-lg border border-warm-200 bg-white text-sm text-warm-700 focus:outline-none focus:ring-2 focus:ring-primary-400"
+            />
+          </div>
         </div>
       </Card>
 

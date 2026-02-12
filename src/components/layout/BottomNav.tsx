@@ -1,16 +1,19 @@
 import { NavLink } from 'react-router-dom'
 import { Home, ListTodo, MessageCircle, Calendar, Settings } from 'lucide-react'
+import { useUnreadChat } from '@/hooks/useUnreadChat'
 import clsx from 'clsx'
 
-const navItems = [
-  { to: '/', icon: Home, label: 'Home' },
-  { to: '/lists', icon: ListTodo, label: 'Lists' },
-  { to: '/chat', icon: MessageCircle, label: 'Chat' },
-  { to: '/calendar', icon: Calendar, label: 'Calendar' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
-] as const
-
 export function BottomNav() {
+  const { unreadCount } = useUnreadChat()
+
+  const navItems = [
+    { to: '/', icon: Home, label: 'Home', badge: 0 },
+    { to: '/lists', icon: ListTodo, label: 'Lists', badge: 0 },
+    { to: '/chat', icon: MessageCircle, label: 'Chat', badge: unreadCount },
+    { to: '/calendar', icon: Calendar, label: 'Calendar', badge: 0 },
+    { to: '/settings', icon: Settings, label: 'Settings', badge: 0 },
+  ]
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-warm-800/90 backdrop-blur-lg border-t border-warm-100 dark:border-warm-700 pb-safe z-40">
       <div className="flex items-center justify-around max-w-lg mx-auto h-16">
@@ -28,7 +31,14 @@ export function BottomNav() {
               )
             }
           >
-            <item.icon size={22} strokeWidth={1.8} />
+            <div className="relative">
+              <item.icon size={22} strokeWidth={1.8} />
+              {item.badge > 0 && (
+                <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-danger-500 text-white text-[9px] font-bold flex items-center justify-center">
+                  {item.badge > 9 ? '9+' : item.badge}
+                </span>
+              )}
+            </div>
             <span className="text-[10px] font-medium">{item.label}</span>
           </NavLink>
         ))}

@@ -355,22 +355,34 @@ export type Database = {
         Row: {
           id: string
           household_id: string
-          user_id: string
+          user_id: string | null
+          role: 'user' | 'assistant'
           content: string
+          intent: string | null
+          related_task_id: string | null
+          read_by: string[]
           created_at: string
         }
         Insert: {
           id?: string
           household_id: string
-          user_id: string
+          user_id?: string | null
+          role?: 'user' | 'assistant'
           content: string
+          intent?: string | null
+          related_task_id?: string | null
+          read_by?: string[]
           created_at?: string
         }
         Update: {
           id?: string
           household_id?: string
-          user_id?: string
+          user_id?: string | null
+          role?: 'user' | 'assistant'
           content?: string
+          intent?: string | null
+          related_task_id?: string | null
+          read_by?: string[]
           created_at?: string
         }
         Relationships: [
@@ -385,6 +397,56 @@ export type Database = {
             foreignKeyName: "messages_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assistant_preferences: {
+        Row: {
+          id: string
+          user_id: string
+          enabled: boolean
+          quiet_hours_start: string | null
+          quiet_hours_end: string | null
+          briefing_time: string | null
+          agent_frequency: 'off' | 'minimal' | 'normal' | 'proactive'
+          agent_tone: 'professional' | 'friendly' | 'casual' | 'brief'
+          snoozed_until: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          enabled?: boolean
+          quiet_hours_start?: string | null
+          quiet_hours_end?: string | null
+          briefing_time?: string | null
+          agent_frequency?: 'off' | 'minimal' | 'normal' | 'proactive'
+          agent_tone?: 'professional' | 'friendly' | 'casual' | 'brief'
+          snoozed_until?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          enabled?: boolean
+          quiet_hours_start?: string | null
+          quiet_hours_end?: string | null
+          briefing_time?: string | null
+          agent_frequency?: 'off' | 'minimal' | 'normal' | 'proactive'
+          agent_tone?: 'professional' | 'friendly' | 'casual' | 'brief'
+          snoozed_until?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assistant_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },

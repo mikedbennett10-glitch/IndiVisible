@@ -25,6 +25,11 @@ export type ActivityLogInsert = Database['public']['Tables']['activity_log']['In
 export type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
 export type ListUpdate = Database['public']['Tables']['lists']['Update']
 export type TaskUpdate = Database['public']['Tables']['tasks']['Update']
+export type AssistantPreferencesUpdate = Database['public']['Tables']['assistant_preferences']['Update']
+
+// Assistant types
+export type AssistantPreferences = Database['public']['Tables']['assistant_preferences']['Row']
+export type AssistantPreferencesInsert = Database['public']['Tables']['assistant_preferences']['Insert']
 
 // Enums
 export type TaskPriority = Database['public']['Enums']['task_priority']
