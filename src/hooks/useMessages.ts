@@ -23,27 +23,16 @@ function detectAssistantIntent(content: string): boolean {
 }
 
 async function invokeAssistant(householdId: string, userId: string, content: string) {
-  const { data: { session } } = await supabase.auth.getSession()
+  const { error } = await supabase.functions.invoke('chat-respond', {
+    body: {
+      household_id: householdId,
+      user_id: userId,
+      message_content: content,
+    },
+  })
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-  const response = await fetch(
-    `${supabaseUrl}/functions/v1/chat-respond`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token ?? ''}`,
-      },
-      body: JSON.stringify({
-        household_id: householdId,
-        user_id: userId,
-        message_content: content,
-      }),
-    }
-  )
-
-  if (!response.ok) {
-    throw new Error(`Assistant responded with ${response.status}`)
+  if (error) {
+    throw error
   }
 }
 
