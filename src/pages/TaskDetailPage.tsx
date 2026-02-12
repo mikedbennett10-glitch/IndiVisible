@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { ActivityTimeline } from '@/components/tasks/ActivityTimeline'
+import { RecurrencePicker } from '@/components/tasks/RecurrencePicker'
+import { ReminderSection } from '@/components/tasks/ReminderSection'
 import {
   ArrowLeft, Trash2, Check, RotateCcw, Loader2,
-  MapPin, Repeat,
+  MapPin,
 } from 'lucide-react'
 import clsx from 'clsx'
 import type { TaskPriority, TaskUrgency, TaskStatus } from '@/types'
@@ -280,13 +282,25 @@ export function TaskDetailPage() {
           </button>
         </div>
 
+        {/* Recurrence */}
+        <div className="pt-2 border-t border-warm-100">
+          <RecurrencePicker
+            value={task.recurrence_rule}
+            onChange={(value) => handleFieldChange('recurrence_rule', value)}
+          />
+        </div>
+
+        {/* Reminders */}
+        <div className="pt-2 border-t border-warm-100">
+          <ReminderSection
+            taskId={task.id}
+            dueDate={task.due_date}
+            dueTime={task.due_time}
+          />
+        </div>
+
         {/* Placeholder fields */}
         <div className="space-y-3 pt-2 border-t border-warm-100">
-          <div className="flex items-center gap-2 text-warm-300">
-            <Repeat size={16} />
-            <span className="text-sm">Recurrence</span>
-            <Badge variant="muted">Coming Soon</Badge>
-          </div>
           <div className="flex items-center gap-2 text-warm-300">
             <MapPin size={16} />
             <span className="text-sm">Location Reminder</span>

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Check, Clock, GripVertical, Trash2 } from 'lucide-react'
+import { Check, Clock, GripVertical, Trash2, Repeat } from 'lucide-react'
 import { format, isPast, isToday } from 'date-fns'
 import { Badge } from '@/components/ui/Badge'
 import { Avatar } from '@/components/ui/Avatar'
@@ -97,6 +97,9 @@ export function TaskRow({
             <Badge variant={priorityVariant[task.priority]}>
               {task.priority}
             </Badge>
+          )}
+          {task.recurrence_rule && (
+            <span className="text-warm-400"><Repeat size={10} /></span>
           )}
           {task.shared_responsibility && (
             <Badge variant="primary">shared</Badge>

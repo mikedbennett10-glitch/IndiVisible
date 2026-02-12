@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { App } from './App'
+import { registerServiceWorker } from './lib/serviceWorker'
 import './index.css'
 
 const root = document.getElementById('root')
@@ -14,3 +15,6 @@ createRoot(root).render(
     </ErrorBoundary>
   </StrictMode>,
 )
+
+// Register service worker for PWA
+registerServiceWorker()

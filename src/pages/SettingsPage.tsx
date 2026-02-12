@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { ColorPicker } from '@/components/ui/ColorPicker'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { Copy, Check, RefreshCw, LogOut, Users, User, Info } from 'lucide-react'
+import { Copy, Check, RefreshCw, LogOut, Users, User, Info, Bell, BellOff } from 'lucide-react'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 
 export function SettingsPage() {
   const { profile, household, signOut, refreshProfile } = useAuth()
@@ -19,6 +20,8 @@ export function SettingsPage() {
   const [savingName, setSavingName] = useState(false)
   const [copied, setCopied] = useState(false)
   const [showSignOut, setShowSignOut] = useState(false)
+  const { permission, subscribed, loading: pushLoading, subscribe, unsubscribe, isSupported } = usePushNotifications()
+  const [pushToggling, setPushToggling] = useState(false)
 
   async function handleSaveName() {
     if (!profile || !displayName.trim()) return
@@ -184,6 +187,49 @@ export function SettingsPage() {
               </div>
             ))}
           </div>
+        </div>
+      </Card>
+
+      {/* Notifications */}
+      <Card>
+        <div className="flex items-center gap-2 mb-4 text-warm-600">
+          <Bell size={16} />
+          <h2 className="text-sm font-semibold">Notifications</h2>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <p className="text-sm font-medium text-warm-800">Push Notifications</p>
+            <p className="text-xs text-warm-400 mt-0.5">
+              {!isSupported
+                ? 'Push notifications are not supported in this browser'
+                : permission === 'denied'
+                  ? 'Notifications are blocked. Enable them in your browser settings.'
+                  : subscribed
+                    ? 'You will receive push notifications for reminders'
+                    : 'Get notified when reminders fire, even when the app is closed'}
+            </p>
+          </div>
+          {isSupported && permission !== 'denied' && (
+            <button
+              onClick={async () => {
+                setPushToggling(true)
+                const result = subscribed ? await unsubscribe() : await subscribe()
+                if (result.error) toast.error(result.error)
+                else toast.success(subscribed ? 'Push notifications disabled' : 'Push notifications enabled')
+                setPushToggling(false)
+              }}
+              disabled={pushLoading || pushToggling}
+              className="shrink-0 ml-3 p-2 rounded-lg transition-colors disabled:opacity-50"
+              title={subscribed ? 'Disable push notifications' : 'Enable push notifications'}
+            >
+              {subscribed ? (
+                <BellOff size={18} className="text-warm-400" />
+              ) : (
+                <Bell size={18} className="text-primary-600" />
+              )}
+            </button>
+          )}
         </div>
       </Card>
 

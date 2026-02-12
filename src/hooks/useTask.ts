@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from './useAuth'
+import { decodeRecurrenceRule, getNextOccurrence } from '@/lib/recurrence'
 import type { Task, TaskUpdate } from '@/types'
 
 export function useTask(taskId: string | undefined) {
@@ -76,6 +77,33 @@ export function useTask(taskId: string | undefined) {
     if (updateError) {
       setTask(prev)
       return { error: updateError.message }
+    }
+
+    // If completing a recurring task, create the next occurrence
+    if (isCompleting && task.recurrence_rule) {
+      const rule = decodeRecurrenceRule(task.recurrence_rule)
+      if (rule) {
+        const nextDueDate = getNextOccurrence(task.due_date, rule)
+        const shouldCreate = !rule.endDate || nextDueDate <= rule.endDate
+
+        if (shouldCreate) {
+          await supabase.from('tasks').insert({
+            list_id: task.list_id,
+            title: task.title,
+            description: task.description,
+            priority: task.priority,
+            urgency: task.urgency,
+            status: 'pending',
+            due_date: nextDueDate,
+            due_time: task.due_time,
+            assigned_to: task.assigned_to,
+            shared_responsibility: task.shared_responsibility,
+            recurrence_rule: task.recurrence_rule,
+            sort_order: task.sort_order,
+            created_by: profile.id,
+          })
+        }
+      }
     }
 
     if (profile.household_id) {
