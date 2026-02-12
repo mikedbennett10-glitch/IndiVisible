@@ -1,0 +1,106 @@
+# Indivisible Phase 1 (MVP) — Implementation Plan
+
+## Context
+Build the MVP of "Indivisible", a shared household task management web app for couples. The core philosophy is "make it visible" — transparent, real-time shared task lists. Starting from an empty directory, this plan covers the full Phase 1: project scaffolding, database schema, auth, core UI, real-time sync, and mobile-first design.
+
+---
+
+## Phase A: Project Scaffolding (Steps 1-3)
+
+1. Initialize Vite + React + TypeScript via `npm create vite@latest . -- --template react-swc-ts`
+2. Install dependencies:
+   - Production: @supabase/supabase-js, react-router-dom, date-fns, lucide-react, @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities, clsx
+   - Dev: tailwindcss, @tailwindcss/vite
+3. Configure: Tailwind v4 with @theme CSS variables (warm earth-tone palette), Vite path aliases (@/), .env.example, vercel.json SPA rewrites, .gitignore
+
+## Phase B: Database & Types (Steps 4-6)
+
+4. SQL schema (supabase/migrations/00001_initial_schema.sql):
+   - Enums: task_priority, task_urgency, task_status, reminder_type, activity_action
+   - Tables: households, profiles (extends auth.users), lists, tasks, reminders, activity_log
+   - Indexes, updated_at triggers, auto-profile-creation trigger on auth signup, realtime publication
+5. RLS policies (supabase/migrations/00002_rls_policies.sql):
+   - Helper function get_my_household_id() for all household-scoped policies
+   - Full CRUD policies per table, household-isolated
+6. TypeScript types (src/types/database.types.ts, src/types/index.ts) + Supabase client (src/lib/supabase.ts)
+
+## Phase C: Auth System (Steps 7-9)
+
+7. AuthContext (src/contexts/AuthContext.tsx, src/hooks/useAuth.ts) — manages user, profile, household state; signUp/signIn/signOut; auto-fetches profile on auth change
+8. Auth pages: LoginPage, SignupPage, HouseholdSetupPage (create or join via invite code)
+9. Router (src/router.tsx) with ProtectedRoute + RequireHousehold guards — redirects unauthenticated users to login, users without household to setup
+
+## Phase D: Layout & Navigation (Steps 10-12)
+
+10. AppLayout with bottom tab nav (Dashboard, Lists, Chat [coming soon], Calendar [coming soon], Settings), responsive header
+11. Shared UI components: Button, Input, Select, Badge, Card, Modal, Avatar, EmptyState, ConfirmDialog
+12. Toast system (src/contexts/ToastContext.tsx) for success/error notifications
+
+## Phase E: Data Hooks (Steps 13-15)
+
+13. Household hooks: useHousehold, useHouseholdMembers, useProfile
+14. List hooks: useLists (CRUD, reorder), useList (single)
+15. Task hooks: useTasks (CRUD, toggle complete, reorder, filter/sort), useTask (single), useDashboardTasks (categorized queries for dashboard sections + workload balance)
+
+## Phase F: Dashboard & Lists Pages (Steps 16-18)
+
+16. DashboardPage — greeting, critical tasks, overdue, today's tasks, workload balance bar, upcoming week, recently completed
+17. ListsPage — grid of list cards with task counts, create/edit/delete modals, FAB for new list
+18. Icon/Color pickers for list customization
+
+## Phase G: Task Management (Steps 19-21)
+
+19. TaskListPage — task rows with checkbox, quick-add input, filter chips (mine/theirs/shared), sort options, drag-and-drop reorder via @dnd-kit
+20. TaskDetailPage — full editing form (title, description, priority, urgency, status, due date/time, assignee, shared toggle, location/recurrence placeholders disabled)
+21. Activity timeline component + useActivityLog hook
+
+## Phase H: Real-time (Steps 22-23)
+
+22. useRealtimeSubscription — reusable hook wrapping Supabase postgres_changes
+23. Integrate into useTasks, useLists, useDashboardTasks — remote changes update local state automatically; optimistic updates reconcile with server state
+
+## Phase I: Settings (Step 24)
+
+24. SettingsPage — profile editing (name, avatar color), household management (invite code copy/regenerate, member list), sign out
+
+## Phase J: Polish (Steps 25-28)
+
+25. Optimistic UI helper (src/lib/optimistic.ts) — apply/rollback pattern with toast on failure
+26. Mobile polish — useMediaQuery, touch-friendly targets (44px min), safe area insets
+27. Error boundaries, skeleton loading states, PageError component
+28. Final integration — wire main.tsx, index.html meta tags, favicon
+
+---
+
+## Key Architecture Decisions
+
+- Household-scoped RLS via get_my_household_id() helper function (STABLE, SECURITY DEFINER)
+- Tasks -> Lists -> Households hierarchy (no denormalized household_id on tasks)
+- Optimistic UI + realtime reconciliation — mutations update locally, realtime overwrites with server truth
+- Auto-profile trigger on auth.users insert prevents race conditions
+- CSS custom properties in Tailwind @theme for easy future dark mode
+- URL search params for task list filter/sort state (shareable, back-nav friendly)
+
+## File Tree (~60 files)
+
+├── .env.example / .gitignore / vercel.json / vite.config.ts / tsconfig files
+├── supabase/migrations/ (2 SQL files)
+├── src/
+│   ├── main.tsx / App.tsx / router.tsx / index.css
+│   ├── types/ (database.types.ts, index.ts)
+│   ├── lib/ (supabase.ts, optimistic.ts)
+│   ├── contexts/ (AuthContext.tsx, ToastContext.tsx)
+│   ├── hooks/ (14 hooks: useAuth, useToast, useHousehold, useHouseholdMembers, useProfile, useLists, useList, useTasks, useTask, useDashboardTasks, useActivityLog, useRealtimeSubscription, useMediaQuery, useSwipeAction)
+│   ├── components/ (auth/, layout/, ui/, dashboard/, lists/, tasks/, settings/ — ~30 components)
+│   └── pages/ (DashboardPage, ListsPage, TaskListPage, TaskDetailPage, SettingsPage, auth/LoginPage, auth/SignupPage, auth/HouseholdSetupPage)
+
+## Verification
+
+1. npm run dev — app starts, shows login page
+2. Sign up two users, one creates household, other joins via invite code
+3. Both users see same lists and tasks in real-time
+4. Create/edit/complete/delete tasks — verify optimistic UI and realtime sync
+5. Dashboard shows correct categorized tasks and workload balance
+6. Mobile viewport (375px) — verify bottom nav, touch targets, responsive layout
+7. RLS: verify users cannot see other households' data via Supabase dashboard
+8. npm run build — no TypeScript errors, clean production build
