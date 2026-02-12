@@ -10,4 +10,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const authOptions: any = {
+  // Bypass navigator.locks which deadlocks in React StrictMode
+  lock: async (_name: string, _acquireTimeout: number, fn: () => Promise<unknown>) => await fn(),
+}
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: authOptions,
+})
