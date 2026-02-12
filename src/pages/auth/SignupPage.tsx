@@ -1,18 +1,18 @@
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { useAuth } from '@/hooks/useAuth'
-import { UserPlus, Loader2 } from 'lucide-react'
+import { UserPlus, Loader2, Mail } from 'lucide-react'
 
 export function SignupPage() {
   const { user, signUp } = useAuth()
-  const navigate = useNavigate()
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [showCheckEmail, setShowCheckEmail] = useState(false)
 
   if (user) return <Navigate to="/" replace />
 
@@ -35,9 +35,39 @@ export function SignupPage() {
     if (authError) {
       setError(authError.message)
     } else {
-      navigate('/household-setup')
+      setShowCheckEmail(true)
     }
     setSubmitting(false)
+  }
+
+  if (showCheckEmail) {
+    return (
+      <AuthLayout>
+        <div className="text-center">
+          <Mail size={48} className="mx-auto text-primary-500 mb-4" />
+          <h2 className="text-xl font-semibold text-warm-900 mb-2">Check your email</h2>
+          <p className="text-sm text-warm-500 mb-6">
+            We sent a verification link to <strong className="text-warm-700">{email}</strong>.
+            Click the link to activate your account.
+          </p>
+          <p className="text-xs text-warm-400">
+            Didn&apos;t receive it? Check your spam folder, or{' '}
+            <button
+              onClick={() => setShowCheckEmail(false)}
+              className="text-primary-600 font-medium hover:text-primary-700"
+            >
+              try again
+            </button>
+          </p>
+        </div>
+        <p className="mt-6 text-center text-sm text-warm-500">
+          Already verified?{' '}
+          <Link to="/login" className="text-primary-600 font-medium hover:text-primary-700">
+            Sign in
+          </Link>
+        </p>
+      </AuthLayout>
+    )
   }
 
   return (

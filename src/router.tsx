@@ -12,10 +12,14 @@ import { TaskDetailPage } from '@/pages/TaskDetailPage'
 import { CalendarPage } from '@/pages/CalendarPage'
 import { ChatPage } from '@/pages/ChatPage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage'
+import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/signup', element: <SignupPage /> },
+  { path: '/forgot-password', element: <ForgotPasswordPage /> },
+  { path: '/reset-password', element: <ResetPasswordPage /> },
   {
     element: <ProtectedRoute />,
     children: [
