@@ -142,7 +142,7 @@ export function SettingsPage() {
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="flex-1 px-3 py-2 rounded-lg border border-warm-200 bg-white text-sm text-warm-900 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                className="flex-1 px-3 py-2 rounded-lg border border-warm-200 bg-white text-base text-warm-900 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
               />
               <Button
                 size="sm"
@@ -380,7 +380,7 @@ export function SettingsPage() {
                 const result = await updateAssistantPrefs({ quiet_hours_start: e.target.value })
                 if (result.error) toast.error(result.error)
               }}
-              className="flex-1 px-3 py-2 rounded-lg border border-warm-200 bg-white text-sm text-warm-700 focus:outline-none focus:ring-2 focus:ring-primary-400"
+              className="flex-1 px-3 py-2 rounded-lg border border-warm-200 bg-white text-base text-warm-700 focus:outline-none focus:ring-2 focus:ring-primary-400"
             />
             <span className="text-xs text-warm-400">to</span>
             <input
@@ -390,7 +390,7 @@ export function SettingsPage() {
                 const result = await updateAssistantPrefs({ quiet_hours_end: e.target.value })
                 if (result.error) toast.error(result.error)
               }}
-              className="flex-1 px-3 py-2 rounded-lg border border-warm-200 bg-white text-sm text-warm-700 focus:outline-none focus:ring-2 focus:ring-primary-400"
+              className="flex-1 px-3 py-2 rounded-lg border border-warm-200 bg-white text-base text-warm-700 focus:outline-none focus:ring-2 focus:ring-primary-400"
             />
           </div>
         </div>

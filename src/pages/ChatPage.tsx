@@ -214,7 +214,7 @@ export function ChatPage() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Message your household or @indi..."
-            className="flex-1 px-4 py-2.5 rounded-full border border-warm-200 dark:border-warm-600 bg-warm-50 dark:bg-warm-700 text-sm text-warm-900 dark:text-warm-100 placeholder-warm-400 dark:placeholder-warm-500 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+            className="flex-1 px-4 py-2.5 rounded-full border border-warm-200 dark:border-warm-600 bg-warm-50 dark:bg-warm-700 text-base text-warm-900 dark:text-warm-100 placeholder-warm-400 dark:placeholder-warm-500 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
           />
           <button
             onClick={handleSend}

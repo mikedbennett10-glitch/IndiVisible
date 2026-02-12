@@ -38,7 +38,7 @@ export function QuickAddTask({ onAdd }: QuickAddTaskProps) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Add a task..."
-        className="flex-1 text-sm bg-transparent text-warm-900 placeholder:text-warm-400 focus:outline-none"
+        className="flex-1 text-base bg-transparent text-warm-900 placeholder:text-warm-400 focus:outline-none"
       />
     </form>
   )

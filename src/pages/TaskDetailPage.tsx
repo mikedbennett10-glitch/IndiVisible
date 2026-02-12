@@ -145,7 +145,7 @@ export function TaskDetailPage() {
             onChange={(e) => handleFieldChange('description', e.target.value)}
             placeholder="Add a description..."
             rows={3}
-            className="w-full text-sm text-warm-800 bg-warm-50 rounded-lg border border-warm-200 focus:border-primary-400 focus:outline-none p-3 resize-none transition-colors"
+            className="w-full text-base text-warm-800 bg-warm-50 rounded-lg border border-warm-200 focus:border-primary-400 focus:outline-none p-3 resize-none transition-colors"
           />
         </div>
 
@@ -230,7 +230,7 @@ export function TaskDetailPage() {
               type="date"
               value={task.due_date ?? ''}
               onChange={(e) => handleFieldChange('due_date', e.target.value || null)}
-              className="w-full px-3 py-2 rounded-lg border border-warm-200 bg-white text-sm text-warm-900 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+              className="w-full px-3 py-2 rounded-lg border border-warm-200 bg-white text-base text-warm-900 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
             />
           </div>
           <div>
@@ -239,7 +239,7 @@ export function TaskDetailPage() {
               type="time"
               value={task.due_time ?? ''}
               onChange={(e) => handleFieldChange('due_time', e.target.value || null)}
-              className="w-full px-3 py-2 rounded-lg border border-warm-200 bg-white text-sm text-warm-900 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+              className="w-full px-3 py-2 rounded-lg border border-warm-200 bg-white text-base text-warm-900 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
             />
           </div>
         </div>
@@ -250,7 +250,7 @@ export function TaskDetailPage() {
           <select
             value={task.assigned_to ?? ''}
             onChange={(e) => handleFieldChange('assigned_to', e.target.value || null)}
-            className="w-full px-3 py-2.5 rounded-lg border border-warm-200 bg-white text-sm text-warm-900 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+            className="w-full px-3 py-2.5 rounded-lg border border-warm-200 bg-white text-base text-warm-900 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
           >
             <option value="">Unassigned</option>
             {members.map((m) => (
