@@ -8,8 +8,11 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { ColorPicker } from '@/components/ui/ColorPicker'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { Copy, Check, RefreshCw, LogOut, Users, User, Info, Bell, BellOff } from 'lucide-react'
+import { Copy, Check, RefreshCw, LogOut, Users, User, Info, Bell, BellOff, Sun, Moon, Monitor } from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
+import { useTheme } from '@/hooks/useTheme'
+import type { ThemeMode } from '@/contexts/ThemeContext'
+import clsx from 'clsx'
 
 export function SettingsPage() {
   const { profile, household, signOut, refreshProfile } = useAuth()
@@ -22,6 +25,13 @@ export function SettingsPage() {
   const [showSignOut, setShowSignOut] = useState(false)
   const { permission, subscribed, loading: pushLoading, subscribe, unsubscribe, isSupported } = usePushNotifications()
   const [pushToggling, setPushToggling] = useState(false)
+  const { mode: themeMode, setMode: setThemeMode } = useTheme()
+
+  const themeOptions: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
+    { value: 'light', label: 'Light', icon: Sun },
+    { value: 'dark', label: 'Dark', icon: Moon },
+    { value: 'system', label: 'System', icon: Monitor },
+  ]
 
   async function handleSaveName() {
     if (!profile || !displayName.trim()) return
@@ -230,6 +240,35 @@ export function SettingsPage() {
               )}
             </button>
           )}
+        </div>
+      </Card>
+
+      {/* Appearance */}
+      <Card>
+        <div className="flex items-center gap-2 mb-4 text-warm-600">
+          <Sun size={16} />
+          <h2 className="text-sm font-semibold">Appearance</h2>
+        </div>
+
+        <div className="flex gap-1 bg-warm-100 rounded-lg p-1">
+          {themeOptions.map((opt) => {
+            const Icon = opt.icon
+            return (
+              <button
+                key={opt.value}
+                onClick={() => setThemeMode(opt.value)}
+                className={clsx(
+                  'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium transition-colors',
+                  themeMode === opt.value
+                    ? 'bg-white text-warm-900 shadow-sm'
+                    : 'text-warm-500 hover:text-warm-700'
+                )}
+              >
+                <Icon size={14} />
+                {opt.label}
+              </button>
+            )
+          })}
         </div>
       </Card>
 

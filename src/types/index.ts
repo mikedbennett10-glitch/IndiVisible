@@ -7,6 +7,8 @@ export type List = Database['public']['Tables']['lists']['Row']
 export type Task = Database['public']['Tables']['tasks']['Row']
 export type Reminder = Database['public']['Tables']['reminders']['Row']
 export type Notification = Database['public']['Tables']['notifications']['Row']
+export type Message = Database['public']['Tables']['messages']['Row']
+export type Subtask = Database['public']['Tables']['subtasks']['Row']
 export type ActivityLog = Database['public']['Tables']['activity_log']['Row']
 
 // Insert types
@@ -15,6 +17,8 @@ export type ListInsert = Database['public']['Tables']['lists']['Insert']
 export type TaskInsert = Database['public']['Tables']['tasks']['Insert']
 export type ReminderInsert = Database['public']['Tables']['reminders']['Insert']
 export type NotificationInsert = Database['public']['Tables']['notifications']['Insert']
+export type MessageInsert = Database['public']['Tables']['messages']['Insert']
+export type SubtaskInsert = Database['public']['Tables']['subtasks']['Insert']
 export type ActivityLogInsert = Database['public']['Tables']['activity_log']['Insert']
 
 // Update types

@@ -9,8 +9,9 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { ListsPage } from '@/pages/ListsPage'
 import { TaskListPage } from '@/pages/TaskListPage'
 import { TaskDetailPage } from '@/pages/TaskDetailPage'
+import { CalendarPage } from '@/pages/CalendarPage'
+import { ChatPage } from '@/pages/ChatPage'
 import { SettingsPage } from '@/pages/SettingsPage'
-import { ComingSoonPage } from '@/components/layout/ComingSoonPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -29,8 +30,8 @@ export const router = createBrowserRouter([
               { path: '/lists', element: <ListsPage /> },
               { path: '/lists/:listId', element: <TaskListPage /> },
               { path: '/tasks/:taskId', element: <TaskDetailPage /> },
-              { path: '/chat', element: <ComingSoonPage title="Chat" description="AI-powered household assistant coming in Phase 3." icon="message-circle" /> },
-              { path: '/calendar', element: <ComingSoonPage title="Calendar" description="Shared calendar view with Google Calendar sync coming in Phase 4." icon="calendar" /> },
+              { path: '/chat', element: <ChatPage /> },
+              { path: '/calendar', element: <CalendarPage /> },
               { path: '/settings', element: <SettingsPage /> },
             ],
           },

@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { ActivityTimeline } from '@/components/tasks/ActivityTimeline'
 import { RecurrencePicker } from '@/components/tasks/RecurrencePicker'
 import { ReminderSection } from '@/components/tasks/ReminderSection'
+import { SubtaskList } from '@/components/tasks/SubtaskList'
 import {
   ArrowLeft, Trash2, Check, RotateCcw, Loader2,
   MapPin,
@@ -280,6 +281,11 @@ export function TaskDetailPage() {
               )}
             />
           </button>
+        </div>
+
+        {/* Subtasks / Checklist */}
+        <div className="pt-2 border-t border-warm-100">
+          <SubtaskList taskId={task.id} />
         </div>
 
         {/* Recurrence */}
