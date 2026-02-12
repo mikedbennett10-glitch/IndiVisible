@@ -82,7 +82,10 @@ export function useMessages() {
     table: 'messages',
     filter: householdId ? `household_id=eq.${householdId}` : undefined,
     onInsert: (msg) => {
-      setMessages((prev) => [...prev, msg])
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev
+        return [...prev, msg]
+      })
       if (msg.role === 'assistant') {
         setAssistantTyping(false)
       }
@@ -97,14 +100,22 @@ export function useMessages() {
     const trimmed = content.trim()
     if (!trimmed) return { error: 'Empty message' }
 
-    const { error } = await supabase.from('messages').insert({
+    const { data: inserted, error } = await supabase.from('messages').insert({
       household_id: householdId,
       user_id: profile.id,
       role: 'user',
       content: trimmed,
-    })
+    }).select().single()
 
     if (error) return { error: error.message }
+
+    // Optimistic: add message to state immediately (don't wait for realtime)
+    if (inserted) {
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === inserted.id)) return prev
+        return [...prev, inserted]
+      })
+    }
 
     // Check if this message should invoke the assistant
     if (detectAssistantIntent(trimmed)) {

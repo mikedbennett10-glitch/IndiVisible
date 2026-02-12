@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { User, AuthError } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { Profile, Household } from '@/types'
@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [household, setHousehold] = useState<Household | null>(null)
   const [loading, setLoading] = useState(true)
+  const authInitialized = useRef(false)
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -51,15 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, fetchProfile])
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const currentUser = session?.user ?? null
-      setUser(currentUser)
-      if (currentUser) {
-        fetchProfile(currentUser.id).finally(() => setLoading(false))
-      } else {
-        setLoading(false)
-      }
-    })
+    // Prevent StrictMode double-fire from causing navigator.locks deadlock
+    if (authInitialized.current) return
+    authInitialized.current = true
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
@@ -71,10 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile(null)
           setHousehold(null)
         }
+        setLoading(false)
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      authInitialized.current = false
+    }
   }, [fetchProfile])
 
   const signUp = async (email: string, password: string, displayName: string) => {
