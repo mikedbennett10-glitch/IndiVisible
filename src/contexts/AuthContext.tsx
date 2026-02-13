@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { User, AuthError } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { Profile, Household } from '@/types'
@@ -21,26 +21,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [household, setHousehold] = useState<Household | null>(null)
   const [loading, setLoading] = useState(true)
+  const initialized = useRef(false)
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
 
-    if (data) {
-      setProfile(data)
-      if (data.household_id) {
-        const { data: householdData } = await supabase
-          .from('households')
-          .select('*')
-          .eq('id', data.household_id)
-          .single()
-        setHousehold(householdData)
-      } else {
-        setHousehold(null)
+      if (data) {
+        setProfile(data)
+        if (data.household_id) {
+          const { data: householdData } = await supabase
+            .from('households')
+            .select('*')
+            .eq('id', data.household_id)
+            .single()
+          setHousehold(householdData)
+        } else {
+          setHousehold(null)
+        }
       }
+    } catch {
+      // Profile fetch failed — still resolve loading
     }
   }, [])
 
@@ -51,6 +56,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, fetchProfile])
 
   useEffect(() => {
+    // Guard against StrictMode double-fire
+    if (initialized.current) return
+    initialized.current = true
+
+    // Safety timeout: never stay on loading screen forever
+    const timeout = setTimeout(() => setLoading(false), 5000)
+
+    // Initialize auth
+    async function init() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const currentUser = session?.user ?? null
+        setUser(currentUser)
+        if (currentUser) {
+          await fetchProfile(currentUser.id)
+        }
+      } catch {
+        // Auth failed — fall through to login
+      } finally {
+        clearTimeout(timeout)
+        setLoading(false)
+      }
+    }
+
+    init()
+
+    // Listen for subsequent auth changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         const currentUser = session?.user ?? null
@@ -61,7 +93,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile(null)
           setHousehold(null)
         }
-        setLoading(false)
       }
     )
 
